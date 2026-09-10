@@ -51,3 +51,6 @@ item.id
 notepad
 void
 {
+
+.vercel
+.env*

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaPostgresAdapter } from "@prisma/adapter-ppg";
 import { PrismaClient } from "../../../generated/prisma/client";
 
 export async function GET() {
   try {
-    const adapter = new PrismaPg({
+    const adapter = new PrismaPostgresAdapter({
       connectionString: process.env.DATABASE_URL,
     });
 

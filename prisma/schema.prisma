@@ -1,149 +1,148 @@
 generator client {
-provider = "prisma-client"
-output   = "../generated/prisma"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-provider = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-id        Int       @id @default(autoincrement())
-name      String
-email     String    @unique
-mobile    String?   @unique
-password  String
-role      UserRole  @default(CUSTOMER)
-createdAt DateTime  @default(now())
-updatedAt DateTime  @updatedAt
-addresses Address[]
-orders    Order[]
-reviews   Review[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  mobile    String?   @unique
+  password  String
+  role      UserRole  @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
 }
 
 model Address {
-id        Int      @id @default(autoincrement())
-userId    Int
-fullName  String
-mobile    String
-address   String
-city      String
-state     String
-pincode   String
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-orders    Order[]
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  fullName  String
+  mobile    String
+  address   String
+  city      String
+  state     String
+  pincode   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders    Order[]
 }
 
 model Category {
-id        Int       @id @default(autoincrement())
-name      String    @unique
-createdAt DateTime  @default(now())
-updatedAt DateTime  @updatedAt
-products  Product[]
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Product {
-id          Int         @id @default(autoincrement())
-name        String
-description String?
-price       Float
-oldPrice    Float?
-image       String?
-stock       Int         @default(0)
-rating      Float       @default(0)
-reviews     Int         @default(0)
-categoryId  Int
-isActive    Boolean     @default(true)
-createdAt   DateTime    @default(now())
-updatedAt   DateTime    @updatedAt
-orderItems  OrderItem[]
-category    Category    @relation(fields: [categoryId], references: [id])
-reviewItems Review[]
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  oldPrice    Float?
+  image       String?
+  stock       Int         @default(0)
+  rating      Float       @default(0)
+  reviews     Int         @default(0)
+  categoryId  Int
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
+  reviewItems Review[]
 }
 
 model Order {
-id            Int           @id @default(autoincrement())
-userId        Int?
-addressId     Int?
-orderNumber   String        @unique
-status        OrderStatus   @default(PENDING)
-paymentMethod PaymentMethod
-paymentStatus PaymentStatus @default(PENDING)
-subtotal      Float
-deliveryFee   Float         @default(0)
-total         Float
-createdAt     DateTime      @default(now())
-updatedAt     DateTime      @updatedAt
-address       Address?      @relation(fields: [addressId], references: [id])
-user          User?         @relation(fields: [userId], references: [id])
-items         OrderItem[]
-payments      Payment[]
+  id            Int           @id @default(autoincrement())
+  userId        Int?
+  addressId     Int?
+  orderNumber   String        @unique
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(PENDING)
+  subtotal      Float
+  deliveryFee   Float         @default(0)
+  total         Float
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  address       Address?      @relation(fields: [addressId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  payments      Payment[]
 }
 
 model OrderItem {
-id        Int     @id @default(autoincrement())
-orderId   Int
-productId Int
-quantity  Int
-price     Float
-order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-product   Product @relation(fields: [productId], references: [id])
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model Payment {
-id            Int           @id @default(autoincrement())
-orderId       Int
-transactionId String?
-amount        Float
-method        PaymentMethod
-status        PaymentStatus @default(PENDING)
-createdAt     DateTime      @default(now())
-updatedAt     DateTime      @updatedAt
-order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id            Int           @id @default(autoincrement())
+  orderId       Int
+  transactionId String?
+  amount        Float
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Review {
-id        Int      @id @default(autoincrement())
-userId    Int
-productId Int
-rating    Int
-comment   String?
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-@@unique([userId, productId])
-@@index([productId])
-@@index([userId])
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
 }
 
 enum UserRole {
-CUSTOMER
-ADMIN
+  CUSTOMER
+  ADMIN
 }
 
 enum OrderStatus {
-PENDING
-CONFIRMED
-PROCESSING
-SHIPPED
-DELIVERED
-CANCELLED
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }
 
 enum PaymentMethod {
-COD
-UPI
-CARD
+  COD
+  UPI
+  CARD
 }
 
 enum PaymentStatus {
-PENDING
-PAID
-FAILED
-REFUNDED
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
