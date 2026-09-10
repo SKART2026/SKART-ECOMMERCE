@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../../../generated/prisma/client";
 
@@ -27,10 +26,13 @@ export async function GET() {
 
     return NextResponse.json(products);
   } catch (error) {
-    console.error("Failed to fetch products:", error);
+    console.error("DATABASE TEST ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to fetch products" },
+      {
+        error: "Database connection failed",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   } finally {
