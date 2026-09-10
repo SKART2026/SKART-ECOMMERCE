@@ -1,270 +1,282 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-import jwt from "jsonwebtoken";
+import { PrismaClient } from "../../../generated/prisma/client";
+import { jwtVerify } from "jose";
 
-const pool = new Pool({
-connectionString: process.env.DATABASE_URL,
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
 });
 
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({
+  adapter,
+});
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-function getUserIdFromRequest(request: Request): number | null {
-if (!JWT_SECRET) {
-return null;
+function getTokenFromRequest(request: Request) {
+  const cookieHeader = request.headers.get("cookie") || "";
+
+  const tokenMatch = cookieHeader
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith("shopkart_token="));
+
+  if (!tokenMatch) {
+    return null;
+  }
+
+  return tokenMatch.substring("shopkart_token=".length);
 }
 
-const cookieHeader = request.headers.get("cookie") || "";
+async function getLoggedInUser(request: Request) {
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not configured.");
+  }
 
-const tokenCookie = cookieHeader
-.split(";")
-.map((cookie) => cookie.trim())
-.find((cookie) => cookie.startsWith("shopkart_token="));
+  const token = getTokenFromRequest(request);
 
-if (!tokenCookie) {
-return null;
-}
+  if (!token) {
+    return null;
+  }
 
-const token = tokenCookie.substring("shopkart_token=".length);
+  const { payload } = await jwtVerify(
+    token,
+    new TextEncoder().encode(JWT_SECRET)
+  );
 
-try {
-const payload = jwt.verify(token, JWT_SECRET) as {
-userId?: number;
-};
+  const userId = Number(payload.userId);
 
-if (!payload.userId) {
-  return null;
-}
+  if (!userId) {
+    return null;
+  }
 
-return Number(payload.userId);
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  });
 
-} catch {
-return null;
-}
+  return user;
 }
 
 export async function GET(request: Request) {
-try {
-const { searchParams } = new URL(request.url);
-const productId = Number(searchParams.get("productId"));
+  try {
+    const url = new URL(request.url);
 
-if (!productId || Number.isNaN(productId)) {
-  return NextResponse.json(
-    { error: "Valid productId is required" },
-    { status: 400 }
-  );
-}
+    const productId = Number(
+      url.searchParams.get("productId")
+    );
 
-const reviews = await prisma.review.findMany({
-  where: {
-    productId,
-  },
-  include: {
-    user: {
-      select: {
-        id: true,
-        name: true,
+    if (!productId) {
+      return NextResponse.json(
+        { error: "Product ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: {
+        productId,
       },
-    },
-  },
-  orderBy: {
-    createdAt: "desc",
-  },
-});
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-return NextResponse.json({ reviews });
+    return NextResponse.json({
+      reviews,
+      count: reviews.length,
+    });
+  } catch (error) {
+    console.error("REVIEWS GET ERROR:", error);
 
-} catch (error) {
-console.error("GET REVIEWS ERROR:", error);
-
-return NextResponse.json(
-  { error: "Failed to load reviews" },
-  { status: 500 }
-);
-
-}
+    return NextResponse.json(
+      {
+        error: "Failed to load reviews.",
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 export async function POST(request: Request) {
-try {
-const userId = getUserIdFromRequest(request);
+  try {
+    const user = await getLoggedInUser(request);
 
-if (!userId) {
-  return NextResponse.json(
-    { error: "Please login to submit a review" },
-    { status: 401 }
-  );
-}
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Please login to submit a review.",
+        },
+        { status: 401 }
+      );
+    }
 
-const body = await request.json();
+    if (user.role !== "CUSTOMER") {
+      return NextResponse.json(
+        {
+          error: "Only customer accounts can submit reviews.",
+        },
+        { status: 403 }
+      );
+    }
 
-const productId = Number(body.productId);
-const rating = Number(body.rating);
-const comment =
-  typeof body.comment === "string" ? body.comment.trim() : "";
+    const body = await request.json();
 
-if (!productId || Number.isNaN(productId)) {
-  return NextResponse.json(
-    { error: "Valid productId is required" },
-    { status: 400 }
-  );
-}
+    const productId = Number(body.productId);
+    const rating = Number(body.rating);
+    const comment =
+      typeof body.comment === "string"
+        ? body.comment.trim()
+        : "";
 
-if (!rating || rating < 1 || rating > 5) {
-  return NextResponse.json(
-    { error: "Rating must be between 1 and 5" },
-    { status: 400 }
-  );
-}
+    if (!productId) {
+      return NextResponse.json(
+        {
+          error: "Product ID is required.",
+        },
+        { status: 400 }
+      );
+    }
 
-const product = await prisma.product.findUnique({
-  where: {
-    id: productId,
-  },
-});
+    if (
+      !Number.isInteger(rating) ||
+      rating < 1 ||
+      rating > 5
+    ) {
+      return NextResponse.json(
+        {
+          error: "Rating must be between 1 and 5.",
+        },
+        { status: 400 }
+      );
+    }
 
-if (!product) {
-  return NextResponse.json(
-    { error: "Product not found" },
-    { status: 404 }
-  );
-}
+    if (comment.length > 1000) {
+      return NextResponse.json(
+        {
+          error: "Review comment cannot exceed 1000 characters.",
+        },
+        { status: 400 }
+      );
+    }
 
-const review = await prisma.review.upsert({
-  where: {
-    userId_productId: {
-      userId,
-      productId,
-    },
-  },
-  update: {
-    rating,
-    comment: comment || null,
-  },
-  create: {
-    userId,
-    productId,
-    rating,
-    comment: comment || null,
-  },
-  include: {
-    user: {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
       select: {
         id: true,
-        name: true,
+        rating: true,
+        reviews: true,
       },
-    },
-  },
-});
+    });
 
-await updateProductRating(productId);
+    if (!product) {
+      return NextResponse.json(
+        {
+          error: "Product not found.",
+        },
+        { status: 404 }
+      );
+    }
 
-return NextResponse.json({
-  message: "Review saved successfully",
-  review,
-});
+    const existingReview = await prisma.review.findUnique({
+      where: {
+        userId_productId: {
+          userId: user.id,
+          productId,
+        },
+      },
+    });
 
-} catch (error) {
-console.error("POST REVIEW ERROR:", error);
+    if (existingReview) {
+      return NextResponse.json(
+        {
+          error:
+            "You have already reviewed this product.",
+        },
+        { status: 409 }
+      );
+    }
 
-return NextResponse.json(
-  { error: "Failed to save review" },
-  { status: 500 }
-);
+    const oldReviewCount = Number(product.reviews || 0);
+    const oldRating = Number(product.rating || 0);
 
-}
-}
+    const newReviewCount = oldReviewCount + 1;
 
-export async function DELETE(request: Request) {
-try {
-const userId = getUserIdFromRequest(request);
+    const newRating =
+      oldReviewCount > 0
+        ? (oldRating * oldReviewCount + rating) /
+          newReviewCount
+        : rating;
 
-if (!userId) {
-  return NextResponse.json(
-    { error: "Please login first" },
-    { status: 401 }
-  );
-}
+    const review = await prisma.$transaction(async (tx) => {
+      const createdReview = await tx.review.create({
+        data: {
+          userId: user.id,
+          productId,
+          rating,
+          comment: comment || null,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
 
-const { searchParams } = new URL(request.url);
-const reviewId = Number(searchParams.get("id"));
+      await tx.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          rating: Number(newRating.toFixed(1)),
+          reviews: newReviewCount,
+        },
+      });
 
-if (!reviewId || Number.isNaN(reviewId)) {
-  return NextResponse.json(
-    { error: "Valid review id is required" },
-    { status: 400 }
-  );
-}
+      return createdReview;
+    });
 
-const review = await prisma.review.findUnique({
-  where: {
-    id: reviewId,
-  },
-});
+    return NextResponse.json(
+      {
+        message: "Review submitted successfully.",
+        review,
+        rating: Number(newRating.toFixed(1)),
+        reviews: newReviewCount,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("REVIEW POST ERROR:", error);
 
-if (!review) {
-  return NextResponse.json(
-    { error: "Review not found" },
-    { status: 404 }
-  );
-}
-
-if (review.userId !== userId) {
-  return NextResponse.json(
-    { error: "You can only delete your own review" },
-    { status: 403 }
-  );
-}
-
-await prisma.review.delete({
-  where: {
-    id: reviewId,
-  },
-});
-
-await updateProductRating(review.productId);
-
-return NextResponse.json({
-  message: "Review deleted successfully",
-});
-
-} catch (error) {
-console.error("DELETE REVIEW ERROR:", error);
-
-return NextResponse.json(
-  { error: "Failed to delete review" },
-  { status: 500 }
-);
-
-}
-}
-
-async function updateProductRating(productId: number) {
-const ratingSummary = await prisma.review.aggregate({
-where: {
-productId,
-},
-_avg: {
-rating: true,
-},
-_count: {
-rating: true,
-},
-});
-
-await prisma.product.update({
-where: {
-id: productId,
-},
-data: {
-rating: ratingSummary._avg.rating
-? Number(ratingSummary._avg.rating.toFixed(1))
-: 0,
-reviews: ratingSummary._count.rating,
-},
-});
+    return NextResponse.json(
+      {
+        error: "Failed to submit review.",
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
