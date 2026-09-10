@@ -5,7 +5,7 @@ import { PrismaClient } from "../../../generated/prisma/client";
 export async function GET() {
   try {
     const adapter = new PrismaPostgresAdapter({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: process.env.DATABASE_URL!,
     });
 
     const prisma = new PrismaClient({ adapter });
