@@ -128,7 +128,7 @@ return customers.filter((customer) => {
 }, [customers, search]);
 
 function formatCurrency(value: number) {
-return `â‚¹${Number(value || 0).toLocaleString("en-IN", {
+return `\u20B9${Number(value || 0).toLocaleString("en-IN", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })}`;
@@ -1123,4 +1123,6 @@ fontSize: "14px",
 
 );
 }
+
+
 
