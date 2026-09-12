@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -128,7 +128,7 @@ return customers.filter((customer) => {
 }, [customers, search]);
 
 function formatCurrency(value: number) {
-return `₹${Number(value || 0).toLocaleString("en-IN", {
+return `â‚¹${Number(value || 0).toLocaleString("en-IN", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })}`;
@@ -279,7 +279,7 @@ color: "#555",
 fontSize: "14px",
 }}
 >
-← Back to Admin Dashboard </Link>
+â† Back to Admin Dashboard </Link>
 
         <h1
           style={{
@@ -311,7 +311,7 @@ fontSize: "14px",
           fontWeight: "600",
         }}
       >
-        ↻ Refresh
+        â†» Refresh
       </button>
     </div>
 
@@ -647,7 +647,7 @@ fontSize: "14px",
               cursor: "pointer",
             }}
           >
-            ×
+            Ã—
           </button>
         </div>
 
@@ -1001,7 +1001,7 @@ fontSize: "14px",
                               color: "#555",
                             }}
                           >
-                            × {item.quantity}{" "}
+                            Ã— {item.quantity}{" "}
                             {formatCurrency(
                               item.price *
                                 item.quantity
@@ -1123,3 +1123,4 @@ fontSize: "14px",
 
 );
 }
+
