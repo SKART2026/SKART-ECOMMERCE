@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -41,6 +40,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -203,6 +203,26 @@ export default function HomePage() {
     toggleWishlist(product);
   };
 
+  const handleLogout = async () => {
+    try {
+      setLogoutLoading(true);
+
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Unable to logout. Please try again.");
+      setLogoutLoading(false);
+    }
+  };
+
   const formatPrice = (price: number) => {
     return price.toLocaleString("en-IN");
   };
@@ -282,6 +302,15 @@ export default function HomePage() {
             >
               👤 Account
             </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={logoutLoading}
+              className="hidden rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:block"
+            >
+              {logoutLoading ? "Logging out..." : "🚪 Logout"}
+            </button>
           </nav>
         </div>
 
@@ -918,4 +947,3 @@ export default function HomePage() {
     </main>
   );
 }
-
