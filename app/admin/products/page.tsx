@@ -303,28 +303,43 @@ export default function AdminProductsPage() {
 
     try {
       if (!form.name.trim()) {
-        throw new Error("Product name is required");
+        throw new Error("Product name is required.");
       }
 
       if (!form.price || Number(form.price) < 0) {
-        throw new Error("Please enter a valid price");
+        throw new Error("Please enter a valid price.");
       }
 
       if (!form.categoryId) {
-        throw new Error("Please select a category");
+        throw new Error("Please select a category.");
       }
 
-      const stockValue = Math.max(0, Math.floor(Number(form.stock) || 0));
+      const stockValue = Math.max(
+        0,
+        Math.floor(Number(form.stock) || 0)
+      );
+
+      const ratingValue = Math.min(
+        5,
+        Math.max(0, Number(form.rating) || 0)
+      );
+
+      const reviewsValue = Math.max(
+        0,
+        Math.floor(Number(form.reviews) || 0)
+      );
 
       const payload = {
         name: form.name.trim(),
         description: form.description.trim() || null,
         price: Number(form.price),
-        oldPrice: form.oldPrice ? Number(form.oldPrice) : null,
+        oldPrice: form.oldPrice
+          ? Number(form.oldPrice)
+          : null,
         image: form.image.trim() || null,
         stock: stockValue,
-        rating: Number(form.rating) || 0,
-        reviews: Number(form.reviews) || 0,
+        rating: ratingValue,
+        reviews: reviewsValue,
         categoryId: Number(form.categoryId),
         isActive: form.isActive,
       };
@@ -348,7 +363,7 @@ export default function AdminProductsPage() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Unable to save product"
+          data.error || "Unable to save product."
         );
       }
 
@@ -367,7 +382,7 @@ export default function AdminProductsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to save product"
+          : "Unable to save product."
       );
     } finally {
       setSaving(false);
@@ -403,7 +418,7 @@ export default function AdminProductsPage() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Unable to update stock"
+          data.error || "Unable to update stock."
         );
       }
 
@@ -425,7 +440,7 @@ export default function AdminProductsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to update stock"
+          : "Unable to update stock."
       );
     } finally {
       setStockUpdatingId(null);
@@ -492,7 +507,7 @@ export default function AdminProductsPage() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || `Unable to ${action} product`
+          data.error || `Unable to ${action} product.`
         );
       }
 
@@ -507,7 +522,7 @@ export default function AdminProductsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : `Unable to ${action} product`
+          : `Unable to ${action} product.`
       );
     }
   }
@@ -537,7 +552,7 @@ export default function AdminProductsPage() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Unable to delete product"
+          data.error || "Unable to delete product."
         );
       }
 
@@ -550,7 +565,7 @@ export default function AdminProductsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to delete product"
+          : "Unable to delete product."
       );
     }
   }
@@ -587,13 +602,15 @@ export default function AdminProductsPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
             <Link
               href="/admin"
-              className="mb-3 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+              className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-800"
             >
-              ← Back to Admin Dashboard
+              <span aria-hidden="true">←</span>
+              Back to Admin Dashboard
             </Link>
 
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -601,88 +618,82 @@ export default function AdminProductsPage() {
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Manage products, stock quantities, pricing and
-              availability.
+              Manage products, stock quantities, pricing and availability.
             </p>
           </div>
 
           <button
             onClick={openAddForm}
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
-            + Add Product
+            <span className="text-lg leading-none">+</span>
+            Add Product
           </button>
         </div>
 
+        {/* Messages */}
         {message && (
-          <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-            {message}
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            <span className="text-base">✓</span>
+            <span>{message}</span>
           </div>
         )}
 
         {error && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-            {error}
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <span className="text-base">!</span>
+            <span>{error}</span>
           </div>
         )}
 
+        {/* Statistics */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
-          <StatCard
-            label="Total Products"
-            value={totalProducts}
-          />
-
-          <StatCard
-            label="Active"
-            value={activeProducts}
-          />
-
-          <StatCard
-            label="Inactive"
-            value={inactiveProducts}
-          />
-
-          <StatCard
-            label="In Stock"
-            value={inStockProducts}
-          />
-
-          <StatCard
-            label="Low Stock"
-            value={lowStockProducts}
-          />
-
-          <StatCard
-            label="Out of Stock"
-            value={outOfStockProducts}
-          />
-
-          <StatCard
-            label="Total Units"
-            value={totalStockUnits}
-          />
+          <StatCard label="Total Products" value={totalProducts} />
+          <StatCard label="Active" value={activeProducts} />
+          <StatCard label="Inactive" value={inactiveProducts} />
+          <StatCard label="In Stock" value={inStockProducts} />
+          <StatCard label="Low Stock" value={lowStockProducts} />
+          <StatCard label="Out of Stock" value={outOfStockProducts} />
+          <StatCard label="Total Units" value={totalStockUnits} />
         </div>
 
+        {/* Filters */}
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex flex-col gap-1">
+            <h2 className="font-semibold text-slate-900">
+              Product Filters
+            </h2>
+
+            <p className="text-xs text-slate-500">
+              Search and filter your product inventory.
+            </p>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Search
               </label>
 
-              <input
-                type="text"
-                value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
-                placeholder="Search product or category..."
-                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  ⌕
+                </span>
+
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(event) =>
+                    setSearch(event.target.value)
+                  }
+                  placeholder="Product or category..."
+                  className="w-full rounded-xl border border-slate-300 py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Category
               </label>
 
@@ -693,9 +704,7 @@ export default function AdminProductsPage() {
                 }
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               >
-                <option value="ALL">
-                  All Categories
-                </option>
+                <option value="ALL">All Categories</option>
 
                 {categories.map((category) => (
                   <option
@@ -709,7 +718,7 @@ export default function AdminProductsPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Status
               </label>
 
@@ -720,22 +729,14 @@ export default function AdminProductsPage() {
                 }
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               >
-                <option value="ALL">
-                  All Status
-                </option>
-
-                <option value="ACTIVE">
-                  Active
-                </option>
-
-                <option value="INACTIVE">
-                  Inactive
-                </option>
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
               </select>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Stock
               </label>
 
@@ -746,18 +747,9 @@ export default function AdminProductsPage() {
                 }
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               >
-                <option value="ALL">
-                  All Stock
-                </option>
-
-                <option value="IN_STOCK">
-                  In Stock
-                </option>
-
-                <option value="LOW_STOCK">
-                  Low Stock
-                </option>
-
+                <option value="ALL">All Stock</option>
+                <option value="IN_STOCK">In Stock</option>
+                <option value="LOW_STOCK">Low Stock</option>
                 <option value="OUT_OF_STOCK">
                   Out of Stock
                 </option>
@@ -766,6 +758,7 @@ export default function AdminProductsPage() {
           </div>
         </div>
 
+        {/* Inventory */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -773,7 +766,7 @@ export default function AdminProductsPage() {
                 Inventory
               </h2>
 
-              <p className="text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500">
                 Showing {filteredProducts.length} of{" "}
                 {products.length} products
               </p>
@@ -781,15 +774,20 @@ export default function AdminProductsPage() {
 
             <button
               onClick={loadProducts}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              disabled={loading}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
             >
-              Refresh
+              {loading ? "Refreshing..." : "↻ Refresh"}
             </button>
           </div>
 
           {loading ? (
-            <div className="px-6 py-16 text-center text-sm text-slate-500">
-              Loading products...
+            <div className="px-6 py-16 text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+
+              <p className="mt-4 text-sm text-slate-500">
+                Loading products...
+              </p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="px-6 py-16 text-center">
@@ -802,36 +800,36 @@ export default function AdminProductsPage() {
               <p className="mt-1 text-sm text-slate-500">
                 Try changing your search or filters.
               </p>
+
+              {(search ||
+                categoryFilter !== "ALL" ||
+                statusFilter !== "ALL" ||
+                stockFilter !== "ALL") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setCategoryFilter("ALL");
+                    setStatusFilter("ALL");
+                    setStockFilter("ALL");
+                  }}
+                  className="mt-4 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full">
+              <table className="min-w-[1100px]">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-4">
-                      Product
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Category
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Price
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Inventory
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Rating
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Status
-                    </th>
-
+                    <th className="px-5 py-4">Product</th>
+                    <th className="px-5 py-4">Category</th>
+                    <th className="px-5 py-4">Price</th>
+                    <th className="px-5 py-4">Inventory</th>
+                    <th className="px-5 py-4">Rating</th>
+                    <th className="px-5 py-4">Status</th>
                     <th className="px-5 py-4 text-right">
                       Actions
                     </th>
@@ -840,8 +838,7 @@ export default function AdminProductsPage() {
 
                 <tbody className="divide-y divide-slate-100">
                   {filteredProducts.map((product) => {
-                    const isOutOfStock =
-                      product.stock <= 0;
+                    const isOutOfStock = product.stock <= 0;
 
                     const isLowStock =
                       product.stock > 0 &&
@@ -855,19 +852,18 @@ export default function AdminProductsPage() {
                         key={product.id}
                         className="transition hover:bg-slate-50"
                       >
+                        {/* Product */}
                         <td className="px-5 py-4">
                           <div className="flex min-w-[260px] items-center gap-3">
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-2xl">
-                              {product.image?.startsWith(
-                                "http"
-                              ) ? (
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100 text-2xl">
+                              {product.image?.startsWith("http") ? (
                                 <img
                                   src={product.image}
                                   alt={product.name}
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                product.image || "📦"
+                                <span>📦</span>
                               )}
                             </div>
 
@@ -883,10 +879,12 @@ export default function AdminProductsPage() {
                           </div>
                         </td>
 
+                        {/* Category */}
                         <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
                           {product.category?.name || "-"}
                         </td>
 
+                        {/* Price */}
                         <td className="whitespace-nowrap px-5 py-4">
                           <div className="font-semibold text-slate-900">
                             ₹
@@ -905,6 +903,7 @@ export default function AdminProductsPage() {
                           )}
                         </td>
 
+                        {/* Inventory */}
                         <td className="px-5 py-4">
                           <div className="min-w-[220px]">
                             <div className="mb-2 flex items-center justify-between gap-3">
@@ -945,10 +944,7 @@ export default function AdminProductsPage() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  changeStock(
-                                    product,
-                                    -5
-                                  )
+                                  changeStock(product, -5)
                                 }
                                 disabled={isStockUpdating}
                                 className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
@@ -959,10 +955,7 @@ export default function AdminProductsPage() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  changeStock(
-                                    product,
-                                    -1
-                                  )
+                                  changeStock(product, -1)
                                 }
                                 disabled={isStockUpdating}
                                 className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
@@ -973,10 +966,7 @@ export default function AdminProductsPage() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  changeStock(
-                                    product,
-                                    1
-                                  )
+                                  changeStock(product, 1)
                                 }
                                 disabled={isStockUpdating}
                                 className="rounded-md border border-green-200 bg-green-50 px-2 py-1 text-[11px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50"
@@ -987,10 +977,7 @@ export default function AdminProductsPage() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  changeStock(
-                                    product,
-                                    5
-                                  )
+                                  changeStock(product, 5)
                                 }
                                 disabled={isStockUpdating}
                                 className="rounded-md border border-green-200 bg-green-50 px-2 py-1 text-[11px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50"
@@ -1001,9 +988,7 @@ export default function AdminProductsPage() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  setStockManually(
-                                    product
-                                  )
+                                  setStockManually(product)
                                 }
                                 disabled={isStockUpdating}
                                 className="rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
@@ -1020,17 +1005,22 @@ export default function AdminProductsPage() {
                           </div>
                         </td>
 
+                        {/* Rating */}
                         <td className="whitespace-nowrap px-5 py-4">
                           <div className="text-sm font-medium text-slate-800">
-                            ⭐{" "}
+                            <span className="text-yellow-500">★</span>{" "}
                             {product.rating.toFixed(1)}
                           </div>
 
                           <div className="text-xs text-slate-400">
-                            {product.reviews} reviews
+                            {product.reviews.toLocaleString(
+                              "en-IN"
+                            )}{" "}
+                            reviews
                           </div>
                         </td>
 
+                        {/* Status */}
                         <td className="whitespace-nowrap px-5 py-4">
                           {product.isActive ? (
                             <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
@@ -1043,13 +1033,14 @@ export default function AdminProductsPage() {
                           )}
                         </td>
 
+                        {/* Actions */}
                         <td className="whitespace-nowrap px-5 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() =>
                                 openEditForm(product)
                               }
-                              className="rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                              className="rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50"
                             >
                               Edit
                             </button>
@@ -1058,7 +1049,7 @@ export default function AdminProductsPage() {
                               onClick={() =>
                                 toggleProduct(product)
                               }
-                              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
                             >
                               {product.isActive
                                 ? "Disable"
@@ -1069,7 +1060,7 @@ export default function AdminProductsPage() {
                               onClick={() =>
                                 deleteProduct(product)
                               }
-                              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
                             >
                               Delete
                             </button>
@@ -1085,15 +1076,15 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {/* Add / Edit Product Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 px-4 py-8">
           <div className="mx-auto max-w-3xl rounded-2xl bg-white shadow-2xl">
+            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
-                  {editingId
-                    ? "Edit Product"
-                    : "Add New Product"}
+                  {editingId ? "Edit Product" : "Add New Product"}
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
@@ -1105,15 +1096,15 @@ export default function AdminProductsPage() {
 
               <button
                 onClick={closeForm}
-                disabled={
-                  saving || uploadingImage
-                }
-                className="rounded-lg px-3 py-2 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                disabled={saving || uploadingImage}
+                aria-label="Close"
+                className="rounded-lg px-3 py-2 text-2xl leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
               >
                 ×
               </button>
             </div>
 
+            {/* Modal Form */}
             <form
               onSubmit={saveProduct}
               className="p-6"
@@ -1234,6 +1225,10 @@ export default function AdminProductsPage() {
                     placeholder="4.5"
                     className="form-input"
                   />
+
+                  <p className="mt-2 text-xs text-slate-400">
+                    Enter a value from 0 to 5.
+                  </p>
                 </FormField>
 
                 <FormField label="Reviews">
@@ -1253,13 +1248,12 @@ export default function AdminProductsPage() {
                   />
                 </FormField>
 
+                {/* Image Upload */}
                 <div className="md:col-span-1">
                   <FormField label="Product Image">
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       {form.image &&
-                        form.image.startsWith(
-                          "http"
-                        ) && (
+                        form.image.startsWith("http") && (
                           <div className="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
                             <img
                               src={form.image}
@@ -1296,27 +1290,23 @@ export default function AdminProductsPage() {
                       >
                         {uploadingImage
                           ? "Uploading Image..."
-                          : "📷 Choose & Upload Image"}
+                          : "Choose & Upload Image"}
                       </button>
 
                       <p className="mt-2 text-center text-xs text-slate-500">
-                        JPG, PNG, WEBP or GIF • Maximum
-                        10 MB
+                        JPG, PNG, WEBP or GIF • Maximum 10 MB
                       </p>
 
                       {form.image && (
                         <button
                           type="button"
                           onClick={() =>
-                            updateForm(
-                              "image",
-                              ""
-                            )
+                            updateForm("image", "")
                           }
                           disabled={
                             uploadingImage || saving
                           }
-                          className="mt-3 w-full rounded-xl border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          className="mt-3 w-full rounded-xl border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                         >
                           Remove Image
                         </button>
@@ -1325,6 +1315,7 @@ export default function AdminProductsPage() {
                   </FormField>
                 </div>
 
+                {/* Image URL */}
                 <div className="md:col-span-1">
                   <FormField label="Image URL (Optional)">
                     <input
@@ -1341,12 +1332,12 @@ export default function AdminProductsPage() {
                     />
 
                     <p className="mt-2 text-xs text-slate-400">
-                      You can also paste an existing
-                      image URL.
+                      You can also paste an existing image URL.
                     </p>
                   </FormField>
                 </div>
 
+                {/* Description */}
                 <div className="md:col-span-2">
                   <FormField label="Description">
                     <textarea
@@ -1364,8 +1355,9 @@ export default function AdminProductsPage() {
                   </FormField>
                 </div>
 
+                {/* Active */}
                 <div className="md:col-span-2">
-                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:bg-slate-100">
                     <input
                       type="checkbox"
                       checked={form.isActive}
@@ -1384,8 +1376,7 @@ export default function AdminProductsPage() {
                       </span>
 
                       <span className="block text-xs text-slate-500">
-                        Active products can be displayed
-                        and purchased by customers.
+                        Active products can be displayed and purchased by customers.
                       </span>
                     </span>
                   </label>
@@ -1398,24 +1389,21 @@ export default function AdminProductsPage() {
                 </div>
               )}
 
+              {/* Buttons */}
               <div className="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={closeForm}
-                  disabled={
-                    saving || uploadingImage
-                  }
-                  className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  disabled={saving || uploadingImage}
+                  className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={
-                    saving || uploadingImage
-                  }
-                  className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={saving || uploadingImage}
+                  className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving
                     ? "Saving..."
@@ -1444,6 +1432,11 @@ export default function AdminProductsPage() {
           border-color: rgb(59 130 246);
           box-shadow: 0 0 0 3px rgb(219 234 254);
         }
+
+        .form-input:disabled {
+          background: rgb(248 250 252);
+          cursor: not-allowed;
+        }
       `}</style>
     </main>
   );
@@ -1457,7 +1450,7 @@ function StatCard({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
         {label}
       </p>
