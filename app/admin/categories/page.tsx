@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Category = {
   id: number;
@@ -19,6 +19,8 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   async function loadCategories() {
     try {
@@ -51,6 +53,7 @@ export default function AdminCategoriesPage() {
     setEditingId(category.id);
     setName(category.name);
     setMessage("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function cancelEdit() {
@@ -121,7 +124,7 @@ export default function AdminCategoriesPage() {
 
   async function deleteCategory(category: Category) {
     if (category._count.products > 0) {
-      alert(
+      setMessage(
         `Cannot delete "${category.name}" because it has ${category._count.products} product(s).`
       );
       return;
@@ -136,6 +139,7 @@ export default function AdminCategoriesPage() {
     }
 
     try {
+      setDeletingId(category.id);
       setMessage("");
 
       const response = await fetch("/api/admin/categories", {
@@ -165,124 +169,151 @@ export default function AdminCategoriesPage() {
       await loadCategories();
     } catch {
       setMessage("Failed to connect to server");
+    } finally {
+      setDeletingId(null);
     }
   }
 
+  const filteredCategories = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return categories;
+    }
+
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(query)
+    );
+  }, [categories, search]);
+
+  const totalProducts = categories.reduce(
+    (total, category) => total + category._count.products,
+    0
+  );
+
+  const emptyCategories = categories.filter(
+    (category) => category._count.products === 0
+  ).length;
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#f5f7fb",
-        padding: "30px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "25px",
-          }}
-        >
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: "30px",
-              }}
-            >
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100">
+                #
+              </span>
+              Admin Management
+            </div>
+
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Category Management
             </h1>
 
-            <p
-              style={{
-                color: "#666",
-                marginTop: "8px",
-              }}
-            >
-              Manage your SKART product categories
+            <p className="mt-1 text-sm text-slate-500">
+              Create, edit and manage your ShopKart product categories.
             </p>
           </div>
 
           <a
             href="/admin"
-            style={{
-              textDecoration: "none",
-              padding: "10px 16px",
-              borderRadius: "8px",
-              background: "#111827",
-              color: "white",
-              fontWeight: 600,
-            }}
+            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
           >
             ← Admin Dashboard
           </a>
         </div>
 
-        <section
-          style={{
-            background: "white",
-            padding: "22px",
-            borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-            marginBottom: "25px",
-          }}
-        >
-          <h2
-            style={{
-              marginTop: 0,
-            }}
-          >
-            {editingId !== null ? "Edit Category" : "Add New Category"}
-          </h2>
+        {/* Stats */}
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Total Categories
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {categories.length}
+                </p>
+              </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-            }}
-          >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">
+                #
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Total Products
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {totalProducts}
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-xl text-emerald-600">
+                📦
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  Empty Categories
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {emptyCategories}
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-xl text-amber-600">
+                !
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Add / Edit */}
+        <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-4 flex flex-col gap-1">
+            <h2 className="text-lg font-bold text-slate-900">
+              {editingId !== null ? "Edit Category" : "Add New Category"}
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              {editingId !== null
+                ? "Update the selected category name."
+                : "Create a new category for your products."}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
             <input
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Enter category name"
               maxLength={50}
+              disabled={saving}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   saveCategory();
                 }
               }}
-              style={{
-                flex: 1,
-                minWidth: "250px",
-                padding: "12px",
-                border: "1px solid #d1d5db",
-                borderRadius: "8px",
-                fontSize: "16px",
-              }}
+              className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-100"
             />
 
             <button
               type="button"
               onClick={saveCategory}
               disabled={saving}
-              style={{
-                padding: "12px 20px",
-                border: "none",
-                borderRadius: "8px",
-                background: "#2563eb",
-                color: "white",
-                cursor: saving ? "not-allowed" : "pointer",
-                fontWeight: 600,
-              }}
+              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving
                 ? "Saving..."
@@ -295,13 +326,8 @@ export default function AdminCategoriesPage() {
               <button
                 type="button"
                 onClick={cancelEdit}
-                style={{
-                  padding: "12px 20px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "8px",
-                  background: "white",
-                  cursor: "pointer",
-                }}
+                disabled={saving}
+                className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -309,162 +335,180 @@ export default function AdminCategoriesPage() {
           </div>
 
           {message && (
-            <p
-              style={{
-                marginBottom: 0,
-                marginTop: "15px",
-                fontWeight: 600,
-              }}
-            >
+            <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
               {message}
-            </p>
+            </div>
           )}
         </section>
 
-        <section
-          style={{
-            background: "white",
-            borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              padding: "20px 22px",
-              borderBottom: "1px solid #e5e7eb",
-            }}
-          >
-            <h2
-              style={{
-                margin: 0,
-              }}
-            >
-              Categories ({categories.length})
-            </h2>
+        {/* Category list */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Categories ({filteredCategories.length})
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Manage all categories and their product assignments.
+              </p>
+            </div>
+
+            <div className="flex w-full gap-2 sm:w-auto">
+              <input
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search categories..."
+                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 sm:w-64"
+              />
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="rounded-xl border border-slate-300 px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {loading ? (
-            <div
-              style={{
-                padding: "30px",
-                textAlign: "center",
-              }}
-            >
-              Loading categories...
+            <div className="flex min-h-64 items-center justify-center">
+              <div className="text-center">
+                <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                <p className="text-sm font-medium text-slate-500">
+                  Loading categories...
+                </p>
+              </div>
             </div>
-          ) : categories.length === 0 ? (
-            <div
-              style={{
-                padding: "30px",
-                textAlign: "center",
-                color: "#666",
-              }}
-            >
-              No categories found.
+          ) : filteredCategories.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+                #
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900">
+                {search ? "No categories found" : "No categories yet"}
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                {search
+                  ? "Try a different search term."
+                  : "Create your first product category using the form above."}
+              </p>
             </div>
           ) : (
-            <div
-              style={{
-                overflowX: "auto",
-              }}
-            >
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                }}
-              >
-                <thead>
-                  <tr
-                    style={{
-                      background: "#f9fafb",
-                      textAlign: "left",
-                    }}
-                  >
-                    <th style={{ padding: "14px 18px" }}>ID</th>
-                    <th style={{ padding: "14px 18px" }}>Category</th>
-                    <th style={{ padding: "14px 18px" }}>Products</th>
-                    <th style={{ padding: "14px 18px" }}>Actions</th>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left">
+                <thead className="bg-slate-50">
+                  <tr className="border-b border-slate-200">
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500">
+                      ID
+                    </th>
+
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Category
+                    </th>
+
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Products
+                    </th>
+
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Status
+                    </th>
+
+                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {categories.map((category) => (
-                    <tr
-                      key={category.id}
-                      style={{
-                        borderTop: "1px solid #e5e7eb",
-                      }}
-                    >
-                      <td style={{ padding: "14px 18px" }}>
-                        {category.id}
-                      </td>
+                  {filteredCategories.map((category) => {
+                    const hasProducts = category._count.products > 0;
+                    const isDeleting = deletingId === category.id;
 
-                      <td
-                        style={{
-                          padding: "14px 18px",
-                          fontWeight: 600,
-                        }}
+                    return (
+                      <tr
+                        key={category.id}
+                        className="border-b border-slate-100 transition hover:bg-slate-50/70"
                       >
-                        {category.name}
-                      </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg bg-slate-100 px-2 text-xs font-bold text-slate-600">
+                            {category.id}
+                          </span>
+                        </td>
 
-                      <td style={{ padding: "14px 18px" }}>
-                        {category._count.products}
-                      </td>
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-slate-900">
+                            {category.name}
+                          </div>
 
-                      <td style={{ padding: "14px 18px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => startEdit(category)}
-                            style={{
-                              padding: "8px 12px",
-                              border: "1px solid #d1d5db",
-                              borderRadius: "6px",
-                              background: "white",
-                              cursor: "pointer",
-                              fontWeight: 600,
-                            }}
-                          >
-                            Edit
-                          </button>
+                          <div className="mt-1 text-xs text-slate-400">
+                            Category ID #{category.id}
+                          </div>
+                        </td>
 
-                          <button
-                            type="button"
-                            onClick={() => deleteCategory(category)}
-                            disabled={category._count.products > 0}
-                            style={{
-                              padding: "8px 12px",
-                              border: "none",
-                              borderRadius: "6px",
-                              background:
-                                category._count.products > 0
-                                  ? "#e5e7eb"
-                                  : "#dc2626",
-                              color:
-                                category._count.products > 0
-                                  ? "#666"
-                                  : "white",
-                              cursor:
-                                category._count.products > 0
-                                  ? "not-allowed"
-                                  : "pointer",
-                              fontWeight: 600,
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="px-6 py-4">
+                          <span className="font-semibold text-slate-800">
+                            {category._count.products}
+                          </span>
+
+                          <span className="ml-1 text-sm text-slate-500">
+                            {category._count.products === 1
+                              ? "product"
+                              : "products"}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          {hasProducts ? (
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                              In Use
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                              Empty
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(category)}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => deleteCategory(category)}
+                              disabled={hasProducts || isDeleting}
+                              title={
+                                hasProducts
+                                  ? "Remove all products from this category before deleting it."
+                                  : "Delete category"
+                              }
+                              className={`rounded-lg px-3 py-2 text-xs font-bold transition ${
+                                hasProducts
+                                  ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                                  : "bg-red-50 text-red-600 hover:bg-red-100"
+                              }`}
+                            >
+                              {isDeleting ? "Deleting..." : "Delete"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
