@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -7,6 +8,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  mobile: string;
   role: string;
 };
 
@@ -173,6 +175,13 @@ export default function AccountPage() {
                     {user.email}
                   </p>
                 </div>
+
+                <div>
+                  <p className="text-sm text-gray-500">Mobile Number</p>
+                  <p className="font-medium text-gray-900">
+                    {user.mobile || "Not available"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -242,3 +251,4 @@ export default function AccountPage() {
     </main>
   );
 }
+
