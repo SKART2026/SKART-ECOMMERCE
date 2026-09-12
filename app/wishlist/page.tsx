@@ -4,372 +4,224 @@ import Link from "next/link";
 import { useCart } from "../../context/CartContext";
 
 export default function WishlistPage() {
-const {
-wishlist,
-removeFromWishlist,
-moveWishlistToCart,
-wishlistCount,
-} = useCart();
+  const {
+    wishlist,
+    removeFromWishlist,
+    moveWishlistToCart,
+    wishlistCount,
+  } = useCart();
 
-return (
-<main
-style={{
-minHeight: "100vh",
-background: "#f5f7fb",
-color: "#111827",
-}}
->
-<header
-style={{
-background: "#111827",
-color: "white",
-padding: "18px 30px",
-display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-gap: "20px",
-flexWrap: "wrap",
-}}
->
-<Link
-href="/"
-style={{
-color: "white",
-textDecoration: "none",
-fontSize: "28px",
-fontWeight: "800",
-}}
->
-🛍️ SKART </Link>
-
-    <nav
-      style={{
-        display: "flex",
-        gap: "10px",
-        alignItems: "center",
-        flexWrap: "wrap",
-      }}
-    >
-      <Link
-        href="/"
-        style={{
-          color: "white",
-          textDecoration: "none",
-          padding: "9px 14px",
-          borderRadius: "8px",
-        }}
-      >
-        🏠 Home
-      </Link>
-
-      <Link
-        href="/categories"
-        style={{
-          color: "white",
-          textDecoration: "none",
-          padding: "9px 14px",
-          borderRadius: "8px",
-        }}
-      >
-        🛍️ Categories
-      </Link>
-
-      <Link
-        href="/cart"
-        style={{
-          color: "white",
-          textDecoration: "none",
-          padding: "9px 14px",
-          borderRadius: "8px",
-        }}
-      >
-        🛒 Cart
-      </Link>
-    </nav>
-  </header>
-
-  <section
-    style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: "35px 20px 60px",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "15px",
-        marginBottom: "30px",
-        flexWrap: "wrap",
-      }}
-    >
-      <div>
-        <h1
-          style={{
-            fontSize: "32px",
-            margin: "0 0 8px",
-          }}
-        >
-          ❤️ My Wishlist
-        </h1>
-
-        <p
-          style={{
-            margin: 0,
-            color: "#6b7280",
-          }}
-        >
-          {wishlistCount} {wishlistCount === 1 ? "item" : "items"} saved
-        </p>
-      </div>
-
-      <Link
-        href="/"
-        style={{
-          background: "#111827",
-          color: "white",
-          textDecoration: "none",
-          padding: "11px 18px",
-          borderRadius: "8px",
-          fontWeight: "600",
-        }}
-      >
-        Continue Shopping
-      </Link>
-    </div>
-
-    {wishlist.length === 0 ? (
-      <div
-        style={{
-          background: "white",
-          borderRadius: "16px",
-          padding: "70px 20px",
-          textAlign: "center",
-          boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "64px",
-            marginBottom: "15px",
-          }}
-        >
-          ❤️
-        </div>
-
-        <h2
-          style={{
-            margin: "0 0 10px",
-          }}
-        >
-          Your wishlist is empty
-        </h2>
-
-        <p
-          style={{
-            color: "#6b7280",
-            marginBottom: "25px",
-          }}
-        >
-          Save products you love and come back to them later.
-        </p>
-
-        <Link
-          href="/"
-          style={{
-            display: "inline-block",
-            background: "#111827",
-            color: "white",
-            textDecoration: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontWeight: "600",
-          }}
-        >
-          Start Shopping
-        </Link>
-      </div>
-    ) : (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-          gap: "22px",
-        }}
-      >
-        {wishlist.map((product) => (
-          <div
-            key={product.id}
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              overflow: "hidden",
-              boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
-            }}
+  return (
+    <main className="min-h-screen bg-gray-50">
+      {/* HEADER */}
+      <header className="bg-gray-900 text-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+          <Link
+            href="/"
+            className="text-2xl font-extrabold text-white"
           >
+            SKART
+          </Link>
+
+          <nav className="flex items-center gap-2 flex-wrap">
             <Link
-              href={`/products/${product.id}`}
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-              }}
+              href="/"
+              className="px-3 py-2 rounded-lg hover:bg-gray-800 transition"
             >
-              <div
-                style={{
-                  height: "210px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#f3f4f6",
-                  fontSize: "80px",
-                }}
-              >
-                {product.image || "📦"}
-              </div>
+              🏠 Home
             </Link>
 
-            <div style={{ padding: "18px" }}>
-              <h2
-                style={{
-                  fontSize: "20px",
-                  margin: "0 0 7px",
-                }}
-              >
-                {product.name}
-              </h2>
+            <Link
+              href="/categories"
+              className="px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+            >
+              🛍️ Categories
+            </Link>
 
-              <p
-                style={{
-                  margin: "0 0 8px",
-                  color: "#6b7280",
-                }}
-              >
-                {product.category}
-              </p>
+            <Link
+              href="/cart"
+              className="px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+            >
+              🛒 Cart
+            </Link>
+          </nav>
+        </div>
+      </header>
 
-              <div
-                style={{
-                  marginBottom: "10px",
-                  color: "#f59e0b",
-                }}
-              >
-                ⭐ {product.rating}{" "}
-                <span
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  ({product.reviews})
-                </span>
-              </div>
+      {/* CONTENT */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+              ❤️ My Wishlist
+            </h1>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: "15px",
-                }}
-              >
-                <strong
-                  style={{
-                    fontSize: "22px",
-                  }}
-                >
-                  ₹{product.price.toLocaleString("en-IN")}
-                </strong>
-
-                {product.oldPrice && (
-                  <span
-                    style={{
-                      color: "#9ca3af",
-                      textDecoration: "line-through",
-                    }}
-                  >
-                    ₹{product.oldPrice.toLocaleString("en-IN")}
-                  </span>
-                )}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  marginBottom: "10px",
-                }}
-              >
-                <button
-                  onClick={() => moveWishlistToCart(product)}
-                  disabled={!product.stock}
-                  style={{
-                    flex: 1,
-                    border: "none",
-                    background: product.stock
-                      ? "#111827"
-                      : "#9ca3af",
-                    color: "white",
-                    padding: "10px",
-                    borderRadius: "8px",
-                    cursor: product.stock
-                      ? "pointer"
-                      : "not-allowed",
-                    fontWeight: "600",
-                  }}
-                >
-                  🛒 Move to Cart
-                </button>
-
-                <button
-                  onClick={() => removeFromWishlist(product.id)}
-                  title="Remove from wishlist"
-                  style={{
-                    width: "45px",
-                    border: "1px solid #e5e7eb",
-                    background: "white",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    fontSize: "18px",
-                  }}
-                >
-                  🗑️
-                </button>
-              </div>
-
-              <Link
-                href={`/products/${product.id}`}
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  border: "1px solid #d1d5db",
-                  color: "#111827",
-                  textDecoration: "none",
-                  padding: "9px",
-                  borderRadius: "8px",
-                  fontWeight: "600",
-                }}
-              >
-                View Product
-              </Link>
-            </div>
+            <p className="text-gray-500 mt-2">
+              {wishlistCount}{" "}
+              {wishlistCount === 1 ? "item" : "items"} saved
+            </p>
           </div>
-        ))}
-      </div>
-    )}
-  </section>
 
-  <footer
-    style={{
-      background: "#111827",
-      color: "#d1d5db",
-      textAlign: "center",
-      padding: "25px",
-    }}
-  >
-    © 2026 SKART. All rights reserved.
-  </footer>
-</main>
+          <Link
+            href="/"
+            className="bg-gray-900 text-white px-5 py-3 rounded-xl font-semibold hover:bg-gray-800 transition"
+          >
+            Continue Shopping
+          </Link>
+        </div>
 
-);
+        {wishlist.length === 0 ? (
+          /* EMPTY WISHLIST */
+          <div className="bg-white rounded-3xl border p-10 sm:p-16 text-center">
+            <div className="text-7xl mb-6">❤️</div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Your wishlist is empty
+            </h2>
+
+            <p className="text-gray-500 mt-3 max-w-md mx-auto">
+              Save products you love and come back to them later.
+            </p>
+
+            <Link
+              href="/"
+              className="inline-block mt-8 bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition"
+            >
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          /* WISHLIST PRODUCTS */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+            {wishlist.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-2xl border overflow-hidden hover:shadow-lg transition"
+              >
+                {/* PRODUCT IMAGE */}
+                <Link
+                  href={`/products/${product.id}`}
+                  className="block"
+                >
+                  <div className="h-56 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {product.image ? (
+                      product.image.startsWith("http") ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <span className="text-7xl">
+                          {product.image}
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-7xl">📦</span>
+                    )}
+                  </div>
+                </Link>
+
+                {/* PRODUCT DETAILS */}
+                <div className="p-5">
+                  <Link href={`/products/${product.id}`}>
+                    <h2 className="text-lg font-bold text-gray-900 hover:text-blue-600 transition">
+                      {product.name}
+                    </h2>
+                  </Link>
+
+                  <p className="text-gray-500 text-sm mt-1">
+                    {product.category}
+                  </p>
+
+                  {/* RATING */}
+                  <div className="mt-3 text-sm">
+                    <span className="text-yellow-500 font-semibold">
+                      ⭐ {product.rating.toFixed(1)}
+                    </span>
+
+                    <span className="text-gray-500 ml-2">
+                      ({product.reviews} reviews)
+                    </span>
+                  </div>
+
+                  {/* PRICE */}
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
+                    <span className="text-xl font-bold text-gray-900">
+                      ₹{product.price.toLocaleString("en-IN")}
+                    </span>
+
+                    {product.oldPrice > product.price && (
+                      <span className="text-gray-400 line-through">
+                        ₹{product.oldPrice.toLocaleString("en-IN")}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* STOCK */}
+                  <div className="mt-3">
+                    {product.stock > 0 ? (
+                      <span className="text-sm text-green-600 font-medium">
+                        ✓ In stock
+                      </span>
+                    ) : (
+                      <span className="text-sm text-red-600 font-medium">
+                        Out of stock
+                      </span>
+                    )}
+                  </div>
+
+                  {/* ACTIONS */}
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => moveWishlistToCart(product)}
+                      disabled={!product.stock}
+                      className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      🛒 Move to Cart
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        removeFromWishlist(product.id)
+                      }
+                      title="Remove from wishlist"
+                      className="w-12 border border-gray-300 bg-white rounded-xl text-xl hover:bg-red-50 hover:border-red-300 transition"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+
+                  {/* VIEW PRODUCT */}
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="block text-center border border-gray-300 text-gray-900 py-3 rounded-xl font-semibold mt-3 hover:bg-gray-50 transition"
+                  >
+                    View Product
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-gray-900 text-white mt-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center">
+          <div className="text-2xl font-bold text-blue-400 mb-2">
+            SKART
+          </div>
+
+          <p className="text-gray-400">
+            Your one-stop online shopping destination.
+          </p>
+
+          <div className="border-t border-gray-700 mt-6 pt-5 text-sm text-gray-500">
+            © 2026 SKART. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </main>
+  );
 }
