@@ -3,6 +3,7 @@ import { PrismaClient } from "../../../../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import crypto from "crypto";
+import Razorpay from "razorpay";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -84,12 +85,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const addressId = Number(body.addressId);
-    const paymentMethod = String(body.paymentMethod || "").toUpperCase();
-    const items = Array.isArray(body.items) ? body.items : [];
+    const paymentMethod = String(
+      body.paymentMethod || ""
+    ).toUpperCase();
 
-    const razorpayOrderId = String(body.razorpayOrderId || "");
-    const razorpayPaymentId = String(body.razorpayPaymentId || "");
-    const razorpaySignature = String(body.razorpaySignature || "");
+    // Support both old "items" and current checkout "cart"
+    const items = Array.isArray(body.items)
+      ? body.items
+      : Array.isArray(body.cart)
+        ? body.cart
+        : [];
+
+    const couponCode = String(
+      body.couponCode || ""
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    const razorpayOrderId = String(
+      body.razorpayOrderId || ""
+    );
+
+    const razorpayPaymentId = String(
+      body.razorpayPaymentId || ""
+    );
+
+    const razorpaySignature = String(
+      body.razorpaySignature || ""
+    );
 
     if (!Number.isInteger(addressId) || addressId <= 0) {
       return NextResponse.json(
@@ -101,7 +125,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (paymentMethod !== "UPI" && paymentMethod !== "CARD") {
+    if (
+      paymentMethod !== "UPI" &&
+      paymentMethod !== "CARD"
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -135,9 +162,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    if (!keySecret) {
+    if (!keyId || !keySecret) {
       return NextResponse.json(
         {
           success: false,
@@ -147,13 +175,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /*
+     * Verify Razorpay payment signature
+     */
     const generatedSignature = crypto
       .createHmac("sha256", keySecret)
-      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .update(
+        `${razorpayOrderId}|${razorpayPaymentId}`
+      )
       .digest("hex");
 
     if (
-      generatedSignature.length !== razorpaySignature.length ||
+      generatedSignature.length !==
+        razorpaySignature.length ||
       !crypto.timingSafeEqual(
         Buffer.from(generatedSignature, "utf8"),
         Buffer.from(razorpaySignature, "utf8")
@@ -167,6 +201,25 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    /*
+     * Fetch the Razorpay order.
+     *
+     * This allows us to verify that the amount paid
+     * belongs to the server-calculated order total.
+     */
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+
+    const razorpayOrder =
+      await razorpay.orders.fetch(
+        razorpayOrderId
+      );
+
+    const razorpayAmount =
+      Number(razorpayOrder.amount) / 100;
 
     const address = await prisma.address.findFirst({
       where: {
@@ -185,18 +238,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const productIds = items.map((item: any) => Number(item.productId));
+    /*
+     * Get products using database prices.
+     * Never trust product prices sent by the browser.
+     */
+    const productIds = items.map((item: any) =>
+  Number(item.productId ?? item.id)
+);
+
+    const uniqueProductIds = [
+  ...new Set(productIds),
+] as number[];
 
     const products = await prisma.product.findMany({
       where: {
         id: {
-          in: productIds,
+          in: uniqueProductIds,
         },
+        isActive: true,
       },
     });
 
+    if (
+      products.length !== uniqueProductIds.length
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "One or more products are no longer available.",
+        },
+        { status: 400 }
+      );
+    }
+
     const productMap = new Map(
-      products.map((product) => [product.id, product])
+      products.map((product) => [
+        product.id,
+        product,
+      ])
     );
 
     const orderItems: {
@@ -208,10 +288,13 @@ export async function POST(request: NextRequest) {
     let subtotal = 0;
 
     for (const item of items) {
-      const productId = Number(item.productId);
+      const productId = Number(item.productId ?? item.id);
       const quantity = Number(item.quantity);
 
-      if (!Number.isInteger(productId) || productId <= 0) {
+      if (
+        !Number.isInteger(productId) ||
+        productId <= 0
+      ) {
         return NextResponse.json(
           {
             success: false,
@@ -221,7 +304,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (!Number.isInteger(quantity) || quantity <= 0) {
+      if (
+        !Number.isInteger(quantity) ||
+        quantity <= 0
+      ) {
         return NextResponse.json(
           {
             success: false,
@@ -264,103 +350,374 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const deliveryFee = subtotal >= 999 ? 0 : 49;
-    const total = subtotal + deliveryFee;
+    subtotal = Number(subtotal.toFixed(2));
 
-    const orderNumber = `SK${Date.now()}${Math.floor(
-      100 + Math.random() * 900
-    )}`;
+    /*
+     * Delivery fee
+     */
+    const deliveryFee =
+      subtotal >= 999 ? 0 : 49;
 
-    const result = await prisma.$transaction(async (tx: any) => {
-      const order = await tx.order.create({
-        data: {
-          orderNumber,
+    /*
+     * Coupon validation
+     */
+    let discount = 0;
+    let appliedCouponId: number | null = null;
+    let appliedCouponCode: string | null = null;
 
-          user: {
-            connect: {
-              id: userId,
-            },
-          },
-
-          address: {
-            connect: {
-              id: addressId,
-            },
-          },
-
-          status: "CONFIRMED",
-          paymentMethod,
-          paymentStatus: "PAID",
-          subtotal,
-          deliveryFee,
-          total,
-
-          items: {
-            create: orderItems.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-          },
-        },
-      });
-
-      for (const item of orderItems) {
-        const updatedProduct = await tx.product.updateMany({
+    if (couponCode) {
+      const coupon =
+        await prisma.coupon.findUnique({
           where: {
-            id: item.productId,
-            stock: {
-              gte: item.quantity,
-            },
-          },
-          data: {
-            stock: {
-              decrement: item.quantity,
-            },
+            code: couponCode,
           },
         });
 
-        if (updatedProduct.count !== 1) {
-          throw new Error(
-            `Insufficient stock for product ${item.productId}.`
-          );
-        }
+      if (!coupon) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invalid coupon code.",
+          },
+          { status: 400 }
+        );
       }
 
-      const payment = await tx.payment.create({
-        data: {
-          orderId: order.id,
-          method: paymentMethod,
-          status: "PAID",
-        },
-      });
+      if (!coupon.isActive) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This coupon is inactive.",
+          },
+          { status: 400 }
+        );
+      }
 
-      return {
-        order,
-        payment,
-      };
-    });
+      const now = new Date();
+
+      if (
+        coupon.startsAt &&
+        now < coupon.startsAt
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "This coupon is not active yet.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        coupon.expiresAt &&
+        now > coupon.expiresAt
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This coupon has expired.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        coupon.usageLimit !== null &&
+        coupon.usedCount >= coupon.usageLimit
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "This coupon usage limit has been reached.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        subtotal < coupon.minOrderAmount
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Minimum order amount is ₹${coupon.minOrderAmount.toFixed(
+              2
+            )}.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (coupon.type === "PERCENTAGE") {
+        if (
+          coupon.value <= 0 ||
+          coupon.value > 100
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Invalid coupon percentage.",
+            },
+            { status: 400 }
+          );
+        }
+
+        discount =
+          (subtotal * coupon.value) / 100;
+
+        if (
+          coupon.maxDiscount !== null
+        ) {
+          discount = Math.min(
+            discount,
+            coupon.maxDiscount
+          );
+        }
+      } else {
+        if (coupon.value <= 0) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Invalid coupon discount.",
+            },
+            { status: 400 }
+          );
+        }
+
+        discount = coupon.value;
+      }
+
+      discount = Math.min(
+        discount,
+        subtotal
+      );
+
+      discount = Number(
+        discount.toFixed(2)
+      );
+
+      appliedCouponId = coupon.id;
+      appliedCouponCode = coupon.code;
+    }
+
+    /*
+     * Final server-calculated total
+     */
+    const total = Number(
+      Math.max(
+        0,
+        subtotal +
+          deliveryFee -
+          discount
+      ).toFixed(2)
+    );
+
+    /*
+     * Verify Razorpay amount against
+     * the server-calculated amount.
+     */
+    if (
+      Math.round(razorpayAmount * 100) !==
+      Math.round(total * 100)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Payment amount does not match the order total.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * Create order and update stock/coupon
+     * usage in one database transaction.
+     */
+    const orderNumber =
+      `SK${Date.now()}${Math.floor(
+        100 + Math.random() * 900
+      )}`;
+
+    const result =
+      await prisma.$transaction(
+        async (tx: any) => {
+          /*
+           * Safely increment coupon usage.
+           */
+          if (appliedCouponId !== null) {
+            const coupon =
+              await tx.coupon.findUnique({
+                where: {
+                  id: appliedCouponId,
+                },
+              });
+
+            if (!coupon) {
+              throw new Error(
+                "Coupon is no longer available."
+              );
+            }
+
+            if (
+              !coupon.isActive
+            ) {
+              throw new Error(
+                "This coupon is no longer active."
+              );
+            }
+
+            if (
+              coupon.usageLimit !== null &&
+              coupon.usedCount >=
+                coupon.usageLimit
+            ) {
+              throw new Error(
+                "This coupon usage limit has been reached."
+              );
+            }
+
+            await tx.coupon.update({
+              where: {
+                id: coupon.id,
+              },
+              data: {
+                usedCount: {
+                  increment: 1,
+                },
+              },
+            });
+          }
+
+          const order =
+            await tx.order.create({
+              data: {
+                orderNumber,
+
+                user: {
+                  connect: {
+                    id: userId,
+                  },
+                },
+
+                address: {
+                  connect: {
+                    id: addressId,
+                  },
+                },
+
+                status: "CONFIRMED",
+                paymentMethod,
+                paymentStatus: "PAID",
+                subtotal,
+                deliveryFee,
+                discount,
+                couponCode:
+                  appliedCouponCode,
+                total,
+
+                items: {
+                  create:
+                    orderItems.map(
+                      (item) => ({
+                        productId:
+                          item.productId,
+                        quantity:
+                          item.quantity,
+                        price:
+                          item.price,
+                      })
+                    ),
+                },
+              },
+            });
+
+          /*
+           * Reduce stock safely.
+           */
+          for (const item of orderItems) {
+            const updatedProduct =
+              await tx.product.updateMany({
+                where: {
+                  id: item.productId,
+                  stock: {
+                    gte: item.quantity,
+                  },
+                },
+                data: {
+                  stock: {
+                    decrement:
+                      item.quantity,
+                  },
+                },
+              });
+
+            if (
+              updatedProduct.count !== 1
+            ) {
+              throw new Error(
+                `Insufficient stock for product ${item.productId}.`
+              );
+            }
+          }
+
+          const payment =
+            await tx.payment.create({
+              data: {
+                orderId: order.id,
+                amount: total,
+                method: paymentMethod,
+                status: "PAID",
+              },
+            });
+
+          return {
+            order,
+            payment,
+          };
+        }
+      );
 
     return NextResponse.json({
       success: true,
-      message: "Payment successful and order placed successfully.",
+      message:
+        "Payment successful and order placed successfully.",
 
       order: {
         id: result.order.id,
-        orderNumber: result.order.orderNumber,
-        total: result.order.total,
-        paymentStatus: result.payment.status,
+        orderNumber:
+          result.order.orderNumber,
+        subtotal:
+          result.order.subtotal,
+        deliveryFee:
+          result.order.deliveryFee,
+        discount:
+          result.order.discount,
+        couponCode:
+          result.order.couponCode,
+        total:
+          result.order.total,
+        paymentStatus:
+          result.payment.status,
       },
 
       payment: {
         razorpayOrderId,
         razorpayPaymentId,
         razorpaySignature,
-        status: result.payment.status,
+        status:
+          result.payment.status,
       },
     });
   } catch (error) {
-    console.error("ONLINE ORDER ERROR:", error);
+    console.error(
+      "ONLINE ORDER ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
