@@ -31,7 +31,6 @@ type RazorpayOptions = {
   name: string;
   description: string;
   order_id: string;
-  checkout_config_id?: string;
 
   prefill?: {
     name?: string;
@@ -366,8 +365,6 @@ export default function CheckoutPage() {
 
       order_id: razorpayOrder.id,
 
-      checkout_config_id:
-        "config_TZaUWcItFqJTEq",
 
       prefill: {
         name: fullName,
