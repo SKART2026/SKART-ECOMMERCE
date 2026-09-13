@@ -2,45 +2,43 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const router = useRouter();
-
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    setMessage("");
     setError("");
 
     try {
       setLoading(true);
 
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email,
-          password,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Login failed.");
+        setError(data.error || "Unable to process your request.");
         return;
       }
 
-      router.push("/");
-      router.refresh();
+      setMessage(
+        data.message ||
+          "If an account exists with this email, a password reset link has been sent."
+      );
     } catch (error) {
       console.error(error);
       setError("Something went wrong. Please try again.");
@@ -62,15 +60,21 @@ export default function LoginPage() {
           </Link>
 
           <h1 className="text-3xl font-bold mt-6">
-            Welcome Back
+            Forgot Password?
           </h1>
 
           <p className="text-gray-500 mt-2">
-            Login to your SKART account
+            Enter your registered email address and we'll send you a reset link.
           </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border p-8">
+
+          {message && (
+            <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl p-4 mb-6">
+              {message}
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 mb-6">
@@ -79,7 +83,7 @@ export default function LoginPage() {
           )}
 
           <form
-            onSubmit={handleLogin}
+            onSubmit={handleSubmit}
             className="space-y-5"
           >
 
@@ -92,31 +96,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block font-semibold">
-                  Password
-                </label>
-
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-blue-600 font-semibold hover:underline"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Enter your registered email"
                 required
                 className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -127,31 +107,20 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 disabled:bg-gray-400"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Sending..." : "Send Reset Link"}
             </button>
 
           </form>
 
-          <div className="text-center mt-6 text-gray-600">
-            Don't have an account?{" "}
-
+          <div className="text-center mt-6">
             <Link
-              href="/register"
+              href="/login"
               className="text-blue-600 font-semibold hover:underline"
             >
-              Create Account
+              ← Back to Login
             </Link>
           </div>
 
-        </div>
-
-        <div className="text-center mt-6">
-          <Link
-            href="/"
-            className="text-gray-500 hover:text-blue-600"
-          >
-            ← Back to Shop
-          </Link>
         </div>
 
       </div>

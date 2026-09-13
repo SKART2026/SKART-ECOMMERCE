@@ -8,19 +8,34 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  name          String
-  email         String         @unique
-  mobile        String?        @unique
-  password      String
-  role          UserRole       @default(CUSTOMER)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  addresses     Address[]
-  orders        Order[]
-  reviews       Review[]
-  cartItems     CartItem[]
-  wishlistItems WishlistItem[]
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  email               String               @unique
+  mobile              String?              @unique
+  password            String
+  role                UserRole             @default(CUSTOMER)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  addresses           Address[]
+  orders              Order[]
+  reviews              Review[]
+  cartItems           CartItem[]
+  wishlistItems       WishlistItem[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Address {
@@ -63,7 +78,7 @@ model Product {
   updatedAt     DateTime       @updatedAt
   orderItems    OrderItem[]
   category      Category       @relation(fields: [categoryId], references: [id])
-  reviewItems   Review[]
+  reviewItems   Review[]       @relation
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
 }
@@ -138,8 +153,8 @@ model Payment {
   amount        Float
   method        PaymentMethod
   status        PaymentStatus @default(PENDING)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
