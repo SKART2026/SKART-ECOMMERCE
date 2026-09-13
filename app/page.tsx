@@ -39,6 +39,7 @@ export default function HomePage() {
 
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -263,7 +264,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <nav className="flex items-center gap-2">
+          {/* DESKTOP NAVIGATION */}
+          <nav className="hidden items-center gap-2 sm:flex">
             <Link
               href="/wishlist"
               className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-pink-50"
@@ -291,14 +293,14 @@ export default function HomePage() {
 
             <Link
               href="/categories"
-              className="hidden rounded-lg px-3 py-2 text-sm font-medium hover:bg-blue-50 sm:block"
+              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-blue-50"
             >
               🛍️ Categories
             </Link>
 
             <Link
               href="/account"
-              className="hidden rounded-lg px-3 py-2 text-sm font-medium hover:bg-blue-50 sm:block"
+              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-blue-50"
             >
               👤 Account
             </Link>
@@ -307,12 +309,83 @@ export default function HomePage() {
               type="button"
               onClick={handleLogout}
               disabled={logoutLoading}
-              className="hidden rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:block"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {logoutLoading ? "Logging out..." : "🚪 Logout"}
             </button>
           </nav>
+
+          {/* MOBILE MENU BUTTON */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-xl border border-gray-300 px-3 py-2 text-xl hover:bg-gray-100 sm:hidden"
+            aria-label="Open menu"
+          >
+            {mobileMenuOpen ? "✕" : "☰"}
+          </button>
         </div>
+
+        {/* MOBILE MENU */}
+        {mobileMenuOpen && (
+          <div className="border-t bg-white px-4 pb-4 sm:hidden">
+            <div className="flex flex-col gap-2 pt-3">
+              <Link
+                href="/wishlist"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-4 py-3 font-medium hover:bg-pink-50"
+              >
+                ❤️ Wishlist
+                {wishlistCount > 0 && (
+                  <span className="ml-2 rounded-full bg-pink-500 px-2 py-1 text-xs text-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setCartOpen(true);
+                }}
+                className="rounded-xl px-4 py-3 text-left font-medium hover:bg-blue-50"
+              >
+                🛒 Cart
+                {cartCount > 0 && (
+                  <span className="ml-2 rounded-full bg-blue-600 px-2 py-1 text-xs text-white">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+
+              <Link
+                href="/categories"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-4 py-3 font-medium hover:bg-blue-50"
+              >
+                🛍️ Categories
+              </Link>
+
+              <Link
+                href="/account"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-4 py-3 font-medium hover:bg-blue-50"
+              >
+                👤 Account
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                className="rounded-xl px-4 py-3 text-left font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {logoutLoading ? "Logging out..." : "🚪 Logout"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* MOBILE SEARCH */}
         <div className="mx-auto block max-w-7xl px-4 pb-4 md:hidden">
