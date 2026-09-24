@@ -1462,7 +1462,10 @@ export const OrderScalarFieldEnum = {
   deliveryFee: 'deliveryFee',
   total: 'total',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  erpnextSalesOrder: 'erpnextSalesOrder',
+  erpnextSyncStatus: 'erpnextSyncStatus',
+  erpnextSyncError: 'erpnextSyncError'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]

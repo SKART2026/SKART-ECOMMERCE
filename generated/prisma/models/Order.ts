@@ -61,6 +61,9 @@ export type OrderMinAggregateOutputType = {
   total: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  erpnextSalesOrder: string | null
+  erpnextSyncStatus: string | null
+  erpnextSyncError: string | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -78,6 +81,9 @@ export type OrderMaxAggregateOutputType = {
   total: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  erpnextSalesOrder: string | null
+  erpnextSyncStatus: string | null
+  erpnextSyncError: string | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -95,6 +101,9 @@ export type OrderCountAggregateOutputType = {
   total: number
   createdAt: number
   updatedAt: number
+  erpnextSalesOrder: number
+  erpnextSyncStatus: number
+  erpnextSyncError: number
   _all: number
 }
 
@@ -134,6 +143,9 @@ export type OrderMinAggregateInputType = {
   total?: true
   createdAt?: true
   updatedAt?: true
+  erpnextSalesOrder?: true
+  erpnextSyncStatus?: true
+  erpnextSyncError?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -151,6 +163,9 @@ export type OrderMaxAggregateInputType = {
   total?: true
   createdAt?: true
   updatedAt?: true
+  erpnextSalesOrder?: true
+  erpnextSyncStatus?: true
+  erpnextSyncError?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -168,6 +183,9 @@ export type OrderCountAggregateInputType = {
   total?: true
   createdAt?: true
   updatedAt?: true
+  erpnextSalesOrder?: true
+  erpnextSyncStatus?: true
+  erpnextSyncError?: true
   _all?: true
 }
 
@@ -272,6 +290,9 @@ export type OrderGroupByOutputType = {
   total: number
   createdAt: Date
   updatedAt: Date
+  erpnextSalesOrder: string | null
+  erpnextSyncStatus: string | null
+  erpnextSyncError: string | null
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -312,6 +333,9 @@ export type OrderWhereInput = {
   total?: Prisma.FloatFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  erpnextSalesOrder?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncStatus?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncError?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.XOR<Prisma.AddressNullableScalarRelationFilter, Prisma.AddressWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
@@ -333,6 +357,9 @@ export type OrderOrderByWithRelationInput = {
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  erpnextSalesOrder?: Prisma.SortOrderInput | Prisma.SortOrder
+  erpnextSyncStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  erpnextSyncError?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.AddressOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
@@ -357,6 +384,9 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   total?: Prisma.FloatFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  erpnextSalesOrder?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncStatus?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncError?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.XOR<Prisma.AddressNullableScalarRelationFilter, Prisma.AddressWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
@@ -378,6 +408,9 @@ export type OrderOrderByWithAggregationInput = {
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  erpnextSalesOrder?: Prisma.SortOrderInput | Prisma.SortOrder
+  erpnextSyncStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  erpnextSyncError?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -403,6 +436,9 @@ export type OrderScalarWhereWithAggregatesInput = {
   total?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
+  erpnextSalesOrder?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  erpnextSyncStatus?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  erpnextSyncError?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
 }
 
 export type OrderCreateInput = {
@@ -417,6 +453,9 @@ export type OrderCreateInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   address?: Prisma.AddressCreateNestedOneWithoutOrdersInput
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -438,6 +477,9 @@ export type OrderUncheckedCreateInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutOrderInput
 }
@@ -454,6 +496,9 @@ export type OrderUpdateInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -475,6 +520,9 @@ export type OrderUncheckedUpdateInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
@@ -494,6 +542,9 @@ export type OrderCreateManyInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -508,6 +559,9 @@ export type OrderUpdateManyMutationInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -525,6 +579,9 @@ export type OrderUncheckedUpdateManyInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrderListRelationFilter = {
@@ -552,6 +609,9 @@ export type OrderCountOrderByAggregateInput = {
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  erpnextSalesOrder?: Prisma.SortOrder
+  erpnextSyncStatus?: Prisma.SortOrder
+  erpnextSyncError?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -579,6 +639,9 @@ export type OrderMaxOrderByAggregateInput = {
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  erpnextSalesOrder?: Prisma.SortOrder
+  erpnextSyncStatus?: Prisma.SortOrder
+  erpnextSyncError?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -596,6 +659,9 @@ export type OrderMinOrderByAggregateInput = {
   total?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  erpnextSalesOrder?: Prisma.SortOrder
+  erpnextSyncStatus?: Prisma.SortOrder
+  erpnextSyncError?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
@@ -757,6 +823,9 @@ export type OrderCreateWithoutUserInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   address?: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   payments?: Prisma.PaymentCreateNestedManyWithoutOrderInput
@@ -776,6 +845,9 @@ export type OrderUncheckedCreateWithoutUserInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutOrderInput
 }
@@ -824,6 +896,9 @@ export type OrderScalarWhereInput = {
   total?: Prisma.FloatFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  erpnextSalesOrder?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncStatus?: Prisma.StringNullableFilter<"Order"> | string | null
+  erpnextSyncError?: Prisma.StringNullableFilter<"Order"> | string | null
 }
 
 export type OrderCreateWithoutAddressInput = {
@@ -838,6 +913,9 @@ export type OrderCreateWithoutAddressInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   payments?: Prisma.PaymentCreateNestedManyWithoutOrderInput
@@ -857,6 +935,9 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutOrderInput
 }
@@ -899,6 +980,9 @@ export type OrderCreateWithoutItemsInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   address?: Prisma.AddressCreateNestedOneWithoutOrdersInput
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   payments?: Prisma.PaymentCreateNestedManyWithoutOrderInput
@@ -919,6 +1003,9 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -950,6 +1037,9 @@ export type OrderUpdateWithoutItemsInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutOrderNestedInput
@@ -970,6 +1060,9 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -985,6 +1078,9 @@ export type OrderCreateWithoutPaymentsInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   address?: Prisma.AddressCreateNestedOneWithoutOrdersInput
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -1005,6 +1101,9 @@ export type OrderUncheckedCreateWithoutPaymentsInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -1036,6 +1135,9 @@ export type OrderUpdateWithoutPaymentsInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -1056,6 +1158,9 @@ export type OrderUncheckedUpdateWithoutPaymentsInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -1073,6 +1178,9 @@ export type OrderCreateManyUserInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -1087,6 +1195,9 @@ export type OrderUpdateWithoutUserInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutOrderNestedInput
@@ -1106,6 +1217,9 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
@@ -1124,6 +1238,9 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrderCreateManyAddressInput = {
@@ -1140,6 +1257,9 @@ export type OrderCreateManyAddressInput = {
   total: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  erpnextSalesOrder?: string | null
+  erpnextSyncStatus?: string | null
+  erpnextSyncError?: string | null
 }
 
 export type OrderUpdateWithoutAddressInput = {
@@ -1154,6 +1274,9 @@ export type OrderUpdateWithoutAddressInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutOrderNestedInput
@@ -1173,6 +1296,9 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
@@ -1191,6 +1317,9 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  erpnextSalesOrder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  erpnextSyncError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1248,6 +1377,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  erpnextSalesOrder?: boolean
+  erpnextSyncStatus?: boolean
+  erpnextSyncError?: boolean
   address?: boolean | Prisma.Order$addressArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1270,6 +1402,9 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  erpnextSalesOrder?: boolean
+  erpnextSyncStatus?: boolean
+  erpnextSyncError?: boolean
   address?: boolean | Prisma.Order$addressArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -1289,6 +1424,9 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  erpnextSalesOrder?: boolean
+  erpnextSyncStatus?: boolean
+  erpnextSyncError?: boolean
   address?: boolean | Prisma.Order$addressArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -1308,9 +1446,12 @@ export type OrderSelectScalar = {
   total?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  erpnextSalesOrder?: boolean
+  erpnextSyncStatus?: boolean
+  erpnextSyncError?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "addressId" | "orderNumber" | "status" | "paymentMethod" | "paymentStatus" | "subtotal" | "discount" | "couponCode" | "deliveryFee" | "total" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "addressId" | "orderNumber" | "status" | "paymentMethod" | "paymentStatus" | "subtotal" | "discount" | "couponCode" | "deliveryFee" | "total" | "createdAt" | "updatedAt" | "erpnextSalesOrder" | "erpnextSyncStatus" | "erpnextSyncError", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   address?: boolean | Prisma.Order$addressArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
@@ -1350,6 +1491,9 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     total: number
     createdAt: Date
     updatedAt: Date
+    erpnextSalesOrder: string | null
+    erpnextSyncStatus: string | null
+    erpnextSyncError: string | null
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -1791,6 +1935,9 @@ export interface OrderFieldRefs {
   readonly total: Prisma.FieldRef<"Order", 'Float'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly erpnextSalesOrder: Prisma.FieldRef<"Order", 'String'>
+  readonly erpnextSyncStatus: Prisma.FieldRef<"Order", 'String'>
+  readonly erpnextSyncError: Prisma.FieldRef<"Order", 'String'>
 }
     
 

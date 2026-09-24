@@ -4,6 +4,7 @@ import { jwtVerify } from "jose";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../../../generated/prisma/client";
 import { Pool } from "pg";
+import { createERPNextSalesOrder } from "../../../lib/erpnext";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -159,8 +160,8 @@ export async function POST(request: NextRequest) {
     }
 
     const productIds = items.map((item: any) =>
-  Number(item.productId ?? item.id)
-);
+      Number(item.productId ?? item.id)
+    );
 
     const uniqueProductIds = [...new Set(productIds)];
 
@@ -184,8 +185,8 @@ export async function POST(request: NextRequest) {
 
     const orderItems = items.map((item: any) => {
       const product = products.find(
-  (p) => p.id === Number(item.productId ?? item.id)
-);
+        (p) => p.id === Number(item.productId ?? item.id)
+      );
 
       if (!product) {
         throw new Error("Product not found");
@@ -346,16 +347,14 @@ export async function POST(request: NextRequest) {
                   code: cleanCouponCode,
                 }
               : {}),
-            ...((
-              await tx.coupon.findUnique({
-                where: {
-                  id: appliedCouponId,
-                },
-                select: {
-                  usageLimit: true,
-                },
-              })
-            )?.usageLimit !== null
+            ...((await tx.coupon.findUnique({
+              where: {
+                id: appliedCouponId,
+              },
+              select: {
+                usageLimit: true,
+              },
+            }))?.usageLimit !== null
               ? {
                   usedCount: {
                     lt:
@@ -400,6 +399,10 @@ export async function POST(request: NextRequest) {
           discount,
           couponCode: appliedCouponCode,
           total,
+
+          // ERPNext synchronization starts as pending.
+          erpnextSyncStatus: "PENDING",
+
           items: {
             create: orderItems,
           },
@@ -448,10 +451,72 @@ export async function POST(request: NextRequest) {
       return createdOrder;
     });
 
+    /*
+     * ERPNext synchronization
+     *
+     * IMPORTANT:
+     * The SKART order has already been successfully created.
+     * If ERPNext fails, we DO NOT cancel the customer's SKART order.
+     */
+    let erpnextSyncStatus = "SYNCED";
+    let erpnextSalesOrder: string | null = null;
+    let erpnextSyncError: string | null = null;
+
+    try {
+      const erpOrder = await createERPNextSalesOrder(order);
+
+      erpnextSalesOrder = erpOrder?.name ?? null;
+
+      if (!erpnextSalesOrder) {
+        throw new Error(
+          "ERPNext Sales Order was created but no Sales Order number was returned."
+        );
+      }
+
+      await prisma.order.update({
+        where: {
+          id: order.id,
+        },
+        data: {
+          erpnextSalesOrder,
+          erpnextSyncStatus: "SYNCED",
+          erpnextSyncError: null,
+        },
+      });
+
+      console.log(
+        `ERPNext sync successful: ${order.orderNumber} -> ${erpnextSalesOrder}`
+      );
+    } catch (erpError: any) {
+      erpnextSyncStatus = "FAILED";
+      erpnextSyncError =
+        erpError?.message || "Unknown ERPNext synchronization error";
+
+      await prisma.order.update({
+        where: {
+          id: order.id,
+        },
+        data: {
+          erpnextSyncStatus: "FAILED",
+          erpnextSyncError,
+        },
+      });
+
+      console.error(
+        `ERPNext sync failed for ${order.orderNumber}:`,
+        erpError
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: "Order placed successfully",
-      order,
+      order: {
+        ...order,
+        erpnextSalesOrder,
+        erpnextSyncStatus,
+        erpnextSyncError,
+      },
       couponCode: appliedCouponCode,
       discount,
       subtotal,
